@@ -7,9 +7,15 @@ const { dbConnection } = require('./database/config');
 dbConnection();
 
 const app = express();
+
+app.use(express.json());
+
 app.use(express.static(path.join(__dirname, 'public')));
 
-const server = require('http').createServer(app);
+// routes
+app.use('/api/account', require('./routes/auth'))
+
+ const server = require('http').createServer(app);
 module.exports.io = require('socket.io')(server);
 
 require('./sockets/socket');
