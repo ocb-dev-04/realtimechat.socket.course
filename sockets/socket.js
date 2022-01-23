@@ -1,23 +1,36 @@
-const { io }= require('../index');
+const { checkJWT } = require('../helpers/jwt');
+
+const { connectUser, disconnectUser } = require('../controllers/socket');
+const { io } = require('../index');
 
 io.on('connection', (client) => {
     console.log('client connected: ');
-    
-    client.emit('active-bands', bands.getBands());
+    const token = client.handshake.headers['x-token'];
+    if (!token) {
+        return client.disconnect();
+    }
+
+    const [valid, uid] = checkJWT(token);
+    console.log(valid, uid);
+
+    if (!valid) {
+        console.error('Invalid token');
+        return client.disconnect();
+    }
+
+    connectUser(uid);
+
+    // add user to some chat room
+    client.join(uid);
+
+
+    client.on('send-message', (data) => {
+        console.log(data);
+    });
 
     client.on('disconnect', () => {
         console.log('client disconnected');
+        disconnectUser(uid);
     });
 
-    client.on('vote', (data) => {
-        console.log(data.id);
-    });
-
-    client.on('add-band', (data) => {
-        console.log(data.name);
-    });
-
-    client.on('delete-band', (data) => {
-        console.log(data.id);
-    });
 });
