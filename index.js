@@ -15,6 +15,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // routes
 app.use('/api/account', require('./routes/auth'))
 app.use('/api/users', require('./routes/users'))
+app.use('/api/messages', require('./routes/messages'))
 
 const server = require('http').createServer(app);
 module.exports.io = require('socket.io')(server);
