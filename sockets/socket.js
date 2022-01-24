@@ -1,6 +1,6 @@
 const { checkJWT } = require('../helpers/jwt');
 
-const { connectUser, disconnectUser } = require('../controllers/socket');
+const { connectUser, disconnectUser, saveMessage } = require('../controllers/socket');
 const { io } = require('../index');
 
 io.on('connection', (client) => {
@@ -24,8 +24,14 @@ io.on('connection', (client) => {
     client.join(uid);
 
 
-    client.on('send-message', (data) => {
+    client.on('send-message', async (data) => {
         console.log(data);
+        const saved = await saveMessage(data)
+        if (!saved) {
+            console.error('Message not saved');
+            return;
+        }
+        io.to(data.to).emit('send-message', data);
     });
 
     client.on('disconnect', () => {
